@@ -61,11 +61,9 @@ const getChuckJoke = server.tool(
 const getChuckJokeByCategory = server.tool(
   "get-chuck-joke-by-category",
   "Get a random Chuck Norris joke from a specific category",
-  async (extra) => {
+  async (parameters, _extra) => {
     try {
-      // Access parameters from the extra.parameters object
-      const category = extra.parameters?.category;
-      
+      const category = parameters.category;
       // Validate category parameter
       if (!category || typeof category !== 'string') {
         return {
@@ -79,7 +77,6 @@ const getChuckJokeByCategory = server.tool(
       }
 
       const response = await fetch(`https://api.chucknorris.io/jokes/random?category=${encodeURIComponent(category)}`);
-      
       if (!response.ok) {
         return {
           content: [
@@ -90,7 +87,7 @@ const getChuckJokeByCategory = server.tool(
           ],
         };
       }
-      
+
       const data = await response.json();
       return {
         content: [
