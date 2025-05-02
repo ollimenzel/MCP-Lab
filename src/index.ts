@@ -13,6 +13,20 @@ const server = new McpServer({
       parameters: {},
     },
     {
+      name: "get-chuck-joke-by-category",
+      description: "Get a random Chuck Norris joke from a specific category",
+      parameters: {
+        type: "object",
+        properties: {
+          category: {
+            type: "string",
+            description: "The category of Chuck Norris joke to fetch",
+          },
+        },
+        required: ["category"],
+      },
+    },
+    {
       name: "get-chuck-categories",
       description: "Get all available categories for Chuck Norris jokes",
       parameters: {},
@@ -47,7 +61,24 @@ const getChuckJoke = server.tool(
     };
   }
 );
-
+// Get Chuck Norris joke by category tool
+const getChuckJokeByCategory = server.tool(
+  "get-chuck-joke-by-category",
+  "Get a random Chuck Norris joke from a specific category",
+  async (params: { category: string }) => {
+    const { category } = params;
+    const response = await fetch(`https://api.chucknorris.io/jokes/random?category=${category}`);
+    const data = await response.json();
+    return {
+      content: [
+        {
+          type: "text",
+          text: data.value,
+        },
+      ],
+    };
+  }
+);
 // Get Chuck Norris joke categories tool
 const getChuckCategories = server.tool(
   "get-chuck-categories",
