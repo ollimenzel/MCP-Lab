@@ -16,14 +16,10 @@ const server = new McpServer({
       name: "get-chuck-joke-by-category",
       description: "Get a random Chuck Norris joke from a specific category",
       parameters: {
-        type: "object",
-        properties: {
-          category: {
-            type: "string",
-            description: "The category of Chuck Norris joke to fetch",
-          },
+        category: {
+          type: "string",
+          description: "The category of Chuck Norris joke to fetch",
         },
-        required: ["category"],
       },
     },
     {
@@ -65,18 +61,54 @@ const getChuckJoke = server.tool(
 const getChuckJokeByCategory = server.tool(
   "get-chuck-joke-by-category",
   "Get a random Chuck Norris joke from a specific category",
-  async (params: { category: string }) => {
-    const { category } = params;
-    const response = await fetch(`https://api.chucknorris.io/jokes/random?category=${category}`);
-    const data = await response.json();
-    return {
-      content: [
-        {
-          type: "text",
-          text: data.value,
-        },
-      ],
-    };
+  async (params) => {
+    try {
+      const category = params.category;
+      // Validate category parameter
+      if (!category || typeof category !== 'string') {
+        return {
+          content: [
+            {
+              type: "text",
+              text: "Error: Please provide a valid category.",
+            },
+          ],
+        };
+      }
+
+      const response = await fetch(`https://api.chucknorris.io/jokes/random?category=${encodeURIComponent(category)}`);
+      
+      if (!response.ok) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Error: Failed to fetch joke. Status: ${response.status}. Category might not exist.`,
+            },
+          ],
+        };
+      }
+      
+      const data = await response.json();
+      return {
+        content: [
+          {
+            type: "text",
+            text: data.value,
+          },
+        ],
+      };
+    } catch (error) {
+      console.error('Error fetching Chuck Norris joke by category:', error);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error: ${error instanceof Error ? error.message : 'Unknown error occurred'}`
+          },
+        ],
+      };
+    }
   }
 );
 // Get Chuck Norris joke categories tool
