@@ -61,10 +61,10 @@ const getChuckJoke = server.tool(
 const getChuckJokeByCategory = server.tool(
   "get-chuck-joke-by-category",
   "Get a random Chuck Norris joke from a specific category",
-  async (parameters: { category: string }) => {
+  async (input: any) => {
     try {
-      const category = parameters.category;
-      // Validate category parameter
+      // Try both direct and nested access for maximum compatibility
+      const category = input.category || input.parameters?.category;
       if (!category || typeof category !== 'string') {
         return {
           content: [
