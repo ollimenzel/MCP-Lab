@@ -97,20 +97,25 @@ const getChuckJokeByCategory = server.tool(
         };
       }
 
-      // Validate category
+      // Validate and map category
       const validCategories = await getChuckCategoriesList();
-      if (!validCategories.includes(category)) {
+      // Try to find a matching category (case-insensitive, trimmed)
+      const normalizedInput = category.trim().toLowerCase();
+      const matchedCategory = validCategories.find(
+        (cat) => cat.toLowerCase() === normalizedInput
+      );
+      if (!matchedCategory) {
         return {
           content: [
             {
               type: "text",
-              text: `Error: '${category}' is not a valid category. Valid categories are: ${validCategories.join(", ")}`,
+              text: `No matching category found for '${category}'. Valid categories are: ${validCategories.join(", ")}`,
             },
           ],
         };
       }
 
-      const response = await fetch(`https://api.chucknorris.io/jokes/random?category=${encodeURIComponent(category)}`);
+      const response = await fetch(`https://api.chucknorris.io/jokes/random?category=${encodeURIComponent(matchedCategory)}`);
       if (!response.ok) {
         return {
           content: [
