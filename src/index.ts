@@ -40,6 +40,27 @@ const server = new McpServer({
   ],
 });
 
+// Chuck Norris categories cache
+let chuckCategoriesCache: string[] | null = null;
+let chuckCategoriesCacheTimestamp = 0;
+const CHUCK_CATEGORIES_CACHE_TTL = 1000 * 60 * 10; // 10 minutes
+
+async function getChuckCategoriesList(): Promise<string[]> {
+  const now = Date.now();
+  if (
+    chuckCategoriesCache &&
+    now - chuckCategoriesCacheTimestamp < CHUCK_CATEGORIES_CACHE_TTL
+  ) {
+    return chuckCategoriesCache;
+  }
+  const response = await fetch("https://api.chucknorris.io/jokes/categories");
+  if (!response.ok) throw new Error("Failed to fetch categories");
+  const data = await response.json();
+  chuckCategoriesCache = data;
+  chuckCategoriesCacheTimestamp = now;
+  return data;
+}
+
 // Get Chuck Norris joke tool
 const getChuckJoke = server.tool(
   "get-chuck-joke",
@@ -71,6 +92,19 @@ const getChuckJokeByCategory = server.tool(
             {
               type: "text",
               text: "Error: Please provide a valid category.",
+            },
+          ],
+        };
+      }
+
+      // Validate category
+      const validCategories = await getChuckCategoriesList();
+      if (!validCategories.includes(category)) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Error: '${category}' is not a valid category. Valid categories are: ${validCategories.join(", ")}`,
             },
           ],
         };
